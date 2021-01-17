@@ -1,0 +1,5 @@
+/target
+*.ppm
+*.md
+*.pdf
+cargo.lock
