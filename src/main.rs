@@ -1,7 +1,7 @@
-mod util;
+mod linalg;
 
-use util::Vec3;
-use util::Color;
+use linalg::Vec3;
+use linalg::Color;
 use std::env;
 use std::fs;
 use std::io::Write;
@@ -38,15 +38,14 @@ fn main() {
     for j in (0..img_height-1).rev() { // iterate down column
         print!("\rScanlines remaining: {}", j);
         for i in 0..img_width { // iterate across row
-            let percent_r = (i as f32) / (img_width-1) as f32;
-            let percent_g = (j as f32) / (img_height-1) as f32;
-            let percent_b = 0.25;
-
-            let r = (percent_r * img_height as f32) as u32;
-            let g = (percent_g * img_width as f32) as u32;
-            let b = (percent_b * 255.999) as u32;
-
-            writeln!(file, "{} {} {}", r, g, b).unwrap();
+            let pixel_color = Vec3 {
+                e: [
+                    (i as f64) / (img_width-1) as f64,
+                    (j as f64) / (img_height-1) as f64,
+                    0.25
+                ]
+            };
+            Color::write_color(&mut file, pixel_color);
         }
     }
     println!("\nDone.");
