@@ -106,34 +106,35 @@ impl ops::Neg for Vec3 {
 }
 
 impl Vec3 {
-    fn x(self) -> f64 { self.e[0] }
-    fn y(self) -> f64 { self.e[1] }
-    fn z(self) -> f64 { self.e[2] }
+    pub fn x(self) -> f64 { self.e[0] }
+    pub fn y(self) -> f64 { self.e[1] }
+    pub fn z(self) -> f64 { self.e[2] }
 
+    fn length_squared(self) -> f64 { self.e[0]*self.e[0] + self.e[1]*self.e[1] + self.e[2]*self.e[2] }
     pub fn length(self) -> f64 { self.length_squared().sqrt() }
 
-    fn length_squared(self) -> f64 {
-        (self.e[0]*self.e[0] + self.e[1]*self.e[1] + self.e[2]*self.e[2])
+    pub fn unit_vector(self) -> Vec3 { self / self.length() }
+}
+
+
+///////////////// vector utility functions /////////////////
+pub mod util {
+    use super::Vec3;
+
+    pub fn dot(u: &Vec3, v: &Vec3) -> f64 { (u[0] * v[0]) + (u[1] * v[1]) + (u[2] * v[2]) }
+
+    pub fn cross(u: &Vec3, v: &Vec3) -> Vec3 {
+        Vec3 {
+            e: [
+                (u.e[1] * v.e[2]) - (u.e[2] * v.e[1]),
+                (u.e[2] * v.e[0]) - (u.e[0] * v.e[2]),
+                (u.e[0] * v.e[1]) - (u.e[1] * v.e[0]),
+            ]
+        }
     }
 
-    pub fn unit_vector(&self) -> Vec3 { *self / self.length() }
+    pub fn unit_vector(v: &Vec3) -> Vec3 { *v / v.length() }
 }
-
-pub fn dot(u: &Vec3, v: &Vec3) -> f64 {
-    (u[0] * v[0]) + (u[1] * v[1]) + (u[2] * v[2])
-}
-
-pub fn cross(u: &Vec3, v: &Vec3) -> Vec3 {
-    Vec3 {
-        e: [
-            (u.e[1] * v.e[2]) - (u.e[2] * v.e[1]),
-            (u.e[2] * v.e[0]) - (u.e[0] * v.e[2]),
-            (u.e[0] * v.e[1]) - (u.e[1] * v.e[0]),
-        ]
-    }
-}
-
-pub fn unit_vector(&v: &Vec3) -> Vec3 { v / v.length() }
 
 //////////////////////// type aliases ////////////////////////
 pub type Point3 = Vec3;
@@ -150,5 +151,9 @@ impl Color {
         let b = (255.999 * pixel_color.z()) as u32;
 
         writeln!(f, "{} {} {}", r, g, b).unwrap();
+    }
+
+    pub fn test(self) {
+        println!("test");
     }
 }
