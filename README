@@ -1,3 +1,3 @@
-Ray tracer created based on the implementation offered here: https://raytracing.github.io/books/RayTracingInOneWeekend.html
+Ray tracer created based on the implementation offered here: https://raytracing.github.io/books/RayTracingInOneWeekend.html (Admittedly, this project took longer than a weekend.)
 
 This is a personal project to learn how to use Rust.
