@@ -1,7 +1,6 @@
 use crate::linalg::Vec3;
 use crate::linalg::Point3;
 
-
 #[derive(Debug, Copy, Clone)]
 pub struct Ray {
     pub orig: Point3,
@@ -19,14 +18,12 @@ impl Ray {
 }
 
 pub mod util {
-    use crate::linalg::Vec3;
-    use crate::linalg::Point3;
-    use crate::linalg::Color;
-    use crate::linalg::util::dot;
+    use crate::linalg:: {Vec3, Point3, Color};
+    use crate::linalg::util:: {dot, unit_vector};
 
     use super::Ray;
 
-    pub fn hit_sphere(center: Point3, radius: f64, r: Ray) -> bool {
+    pub fn hit_sphere(center: Point3, radius: f64, r: Ray) -> f64 {
         /*
         (x - Cx)^2 + (y - Cy)^2 + (z - Cz)^2 = r^2 means (x,y,z) is on the sphere
                                              > r^2 means (x,y,z) is outside the sphere
@@ -40,28 +37,36 @@ pub mod util {
         D > 0 -> two roots
         D == 0 -> one root
         D < 0 -> no roots
+        If the ray missed, return -1.0. If it hit, return the root where t > 0.
+        No need to worry about the t < 0 root since the sphere is currently only in front of the camera.
         */
         let oc = r.origin() - center; // (A-C)
-        let a = dot(&r.direction(), &r.direction()); // dot(b, b)
-        let b = 2.0 * dot(&oc, &r.direction()); // 2*dot(b,(A-C))
-        let c = dot(&oc, &oc) - radius*radius; // dot((A-C), (A-C)) - r^2
-
-        // negative discriminant means that there are no real roots to the 
-        let discriminant = b*b - 4.0*a*c;
+        let a = r.direction().length_squared(); // dot(b, b); vector dotted with itself is the sq. length of itself
+        let half_b = dot(&oc, &r.direction()); // 2*dot(b,(A-C)); see 6.12 in book for explanation of what half_b is
+        let c = oc.length_squared() - radius*radius; // dot((A-C), (A-C)) - r^2
+        let discriminant = half_b*half_b - a*c;
         
-        if discriminant >= 0.0 {true} else {false}
+        if discriminant < 0.0 {
+            -1.0
+        } else {
+            (-half_b - discriminant.sqrt()) / (a)
+        }
     }
 
     pub fn ray_color(r: &Ray, color_1: &Color, color_2: &Color) -> Vec3 {
+        let t = hit_sphere(Point3 { e: [0.0, 0.0, -1.0] }, 0.5, *r);
         // If sphere at (0, 0, -1) with radius = 5 is hit, return the sphere's color (red) instead of drawing the background.
-        if hit_sphere(Point3 { e: [0.0, 0.0, -1.0] }, 0.5, *r) {
-            return Color { e: [1.0, 0.0, 0.0] };
+        // if t > 0, then we know the ray hit the sphere at t. Get the unit normal vector at the point of intersection and color it
+        // based on its position in 3D space.
+        if t > 0.0 {
+            let N = unit_vector(&(r.at(t) - Vec3 { e: [0.0, 0.0, -1.0] }));
+            return 0.5 * Color { e: [N.x() + 1.0, N.y() + 1.0,  N.z() + 1.0] };
         }
 
         // Depending on the height (y) of the ray, this function linearly blends color1 and color2.
         // The blending is performed top down; that is, color_start is concentrated at the top of the image
         // and color_end is concentrated at the bottom on the image. 
-        let unit_direction = r.direction().unit_vector();
+        let unit_direction = r.direction().unit_vector(); // ray didn't it; it's direction continues to be the same
         let t = 0.5*(unit_direction.y() + 1.0);
 
         // Linear interpolation, or "lerp"
